@@ -26,11 +26,24 @@ final class Data {
         float tempC = Float.NaN;
         int usb = -1, ac = -1;
 
+        static int adcVivo() {
+            String bi = Sys.read("/sys/devices/platform/rk30-battery/batinfo");
+            if (bi == null) return -1;
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("cur adc value=(\\d+)").matcher(bi);
+            if (!m.find()) return -1;
+            int a = Integer.parseInt(m.group(1));
+            return a > 300 ? a * 6060 / 1000 : -1;
+        }
+
         static Batt read(Context c) {
             Batt b = new Batt();
             b.pct = (int) Sys.num(PS + "battery/capacity");
             long uv = Sys.num(PS + "battery/voltage_now");
             if (uv > 0) b.mv = (int) (uv > 100000 ? uv / 1000 : uv); // µV → mV (alguns kernels já dão mV)
+            // RK30: voltage_now congela entre degraus de %; o ADC do batinfo é ao vivo
+            // (6,06 mV por unidade, calibrado com os pares voltage/adc que o kernel loga)
+            int vivo = adcVivo();
+            if (vivo > 0) b.mv = vivo;
             b.status = Sys.read(PS + "battery/status");
             b.health = Sys.read(PS + "battery/health");
             b.tech = Sys.read(PS + "battery/technology");
