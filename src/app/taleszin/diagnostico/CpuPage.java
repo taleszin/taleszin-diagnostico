@@ -14,7 +14,10 @@ final class CpuPage extends Page {
     private TextView[] freq;
     private Charts.Meter[] meters;
     private TextView useTotal, useCores, govTv, govExplain, minTv, maxTv, hwTv, onlineTv, srcTv, loadTv, loadGrade, tisNote;
-    private Charts.Meter useMeter;
+    private Charts.Meter useMeter, heatMeter;
+    private TextView heatTv, heatGrade;
+    private LinearLayout heatCard;
+    private boolean hasSensor;
     private Charts.HBars tis;
     private int ticks;
 
@@ -36,6 +39,18 @@ final class CpuPage extends Page {
         now.addView(useMeter, new LinearLayout.LayoutParams(-1, -2));
         useCores = Ui.kv(now, "Uso por núcleo", "medindo…");
         Ui.note(now, "Uso = fração do último segundo em que o CPU esteve trabalhando (calculado do /proc/stat). Um núcleo “desligado” foi desativado pelo sistema para poupar energia e volta sozinho quando precisa.");
+
+        heatCard = Ui.card(body, "Temperatura");
+        hasSensor = !Thermal.sensors().isEmpty();
+        heatTv = Ui.kv(heatCard, hasSensor ? "Sensor" : "Aquecimento estimado", "medindo…");
+        heatMeter = new Charts.Meter(a);
+        heatCard.addView(heatMeter, new LinearLayout.LayoutParams(-1, -2));
+        heatGrade = Ui.grade(heatCard);
+        Ui.note(heatCard, hasSensor
+                ? "Leitura direta do sensor do kernel. Até ~60 °C é normal em uso; acima de 75 °C o chip começa a se proteger reduzindo a velocidade."
+                : "O RK3026 não tem sensor de temperatura dentro do chip (só chips Rockchip mais novos, como o RK3288, trouxeram um) e a bateria deste tablet também não informa. "
+                + "Por isso a Taleszin OS mostra uma ESTIMATIVA: a média do último minuto de uso do CPU × velocidade. Quanto mais tempo no máximo, mais o chip esquenta. "
+                + "Não é °C, é um termômetro de esforço.");
 
         LinearLayout cfg = Ui.card(body, "Configuração");
         govTv = Ui.kv(cfg, "Governor", "…");
@@ -70,8 +85,27 @@ final class CpuPage extends Page {
         Ui.note(ci, "“Recursos” são instruções especiais do chip. neon acelera vídeo e imagem; vfp/vfpv3 fazem contas com vírgula rápido; thumb deixa o código menor. O RK3026 tem 2 núcleos Cortex-A9 até 1008 MHz e GPU Mali-400.");
 
         LinearLayout why = Ui.card(body, "Por que a velocidade cai na bateria?");
-        Ui.note(why, "A bateria deste tablet é de 2014 e já está gasta: quando o CPU pede muita corrente de uma vez, a tensão despenca e o aparelho desliga do nada. Por isso a ROM m7s limita o CPU a 816 MHz quando está na bateria e libera os 1008 MHz só na tomada. Fica um pouco mais lento, mas não apaga no meio do uso.");
+        Ui.note(why, "A bateria deste tablet é de 2014 e já está gasta: quando o CPU pede muita corrente de uma vez, a tensão despenca e o aparelho desliga do nada. Por isso a Taleszin OS limita o CPU a 816 MHz quando está na bateria e libera os 1008 MHz só na tomada. Fica um pouco mais lento, mas não apaga no meio do uso.");
         tick();
+    }
+
+    private void heat(int busy, long hwMax) {
+        double e = Thermal.EFFORT.push(busy, Sys.coreFreq(0, "scaling_cur_freq"), hwMax);
+        if (hasSensor) {
+            List<Thermal.Reading> r = Thermal.sensors();
+            if (!r.isEmpty()) {
+                float mx = -99; StringBuilder sb = new StringBuilder();
+                for (Thermal.Reading x : r) { if (sb.length() > 0) sb.append(" · "); sb.append(x.name).append(' ').append(Ui.f1(x.c)).append(" °C"); mx = Math.max(mx, x.c); }
+                heatTv.setText(sb.toString());
+                heatMeter.set(Math.min(1, mx / 90f), mx < 60 ? Ui.GREEN : mx < 75 ? Ui.YELLOW : Ui.RED);
+                Ui.setGrade(heatGrade, mx < 60 ? Ui.OK : mx < 75 ? Ui.WARN : Ui.BAD, mx < 60 ? "temperatura normal" : mx < 75 ? "quente, mas dentro do limite" : "muito quente");
+                return;
+            }
+        }
+        heatTv.setText(Thermal.effortWord(e) + " · " + Math.round(e * 100) + "% do esforço máximo");
+        int g = Thermal.effortGrade(e);
+        heatMeter.set((float) e, Ui.gradeColor(g));
+        Ui.setGrade(heatGrade, g, g == Ui.OK ? "chip descansado" : g == Ui.WARN ? "uso puxado no último minuto" : "CPU no talo há um tempo: deve estar quente");
     }
 
     static String partName(String p) {
@@ -119,6 +153,7 @@ final class CpuPage extends Page {
             sb.append(l[i + 1] < 0 ? "–" : l[i + 1] + "%");
         }
         useCores.setText(sb.toString());
+        heat(l[0], hwMax);
 
         if (ticks++ % 5 == 0) slow(hwMax, on);
     }

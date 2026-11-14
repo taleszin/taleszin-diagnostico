@@ -23,7 +23,7 @@ final class HealthPage extends Page {
     private boolean loading, exporting;
 
     @Override void build(LinearLayout body) {
-        Ui.header(body, "Saúde (telemetria)", "Um resumo das últimas 24 h, tirado do registro que a ROM m7s grava a cada 30 s: tela, bateria, CPU, apps e reinícios.");
+        Ui.header(body, "Saúde (telemetria)", "Um resumo das últimas 24 h, tirado do registro que a Taleszin OS grava a cada 30 s: tela, bateria, CPU, apps e reinícios.");
         LinearLayout e = Ui.card(body, "Exportar relatório");
         Ui.note(e, "Grava um arquivo de texto com tudo o que o app mostra (todas as abas) na pasta Download. Útil para mandar para quem cuida do tablet.");
         exportBtn = Ui.button(e, "Exportar relatório", new View.OnClickListener() {

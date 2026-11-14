@@ -111,6 +111,15 @@ final class Sys {
 
     private static Method propGet;
 
+    /** Nome e versão da ROM (Taleszin OS; cai no ro.m7s.version das builds antigas). null = ROM de fábrica. */
+    static String rom() {
+        String v = prop("ro.taleszin.version");
+        if (v == null || v.length() == 0) v = prop("ro.m7s.version");
+        if (v == null || v.length() == 0) return null;
+        String n = prop("ro.taleszin.name");
+        return (n == null || n.length() == 0 ? "Taleszin OS" : n) + " " + v;
+    }
+
     static String prop(String key) {
         try {
             if (propGet == null) {

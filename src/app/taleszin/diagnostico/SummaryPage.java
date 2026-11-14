@@ -50,9 +50,9 @@ final class SummaryPage extends Page {
         String[] m = modelInfo();
         set(model, m[0], m[1], gradeModel());
         set(android, "Android " + Build.VERSION.RELEASE, "API " + Build.VERSION.SDK_INT + androidName(), gradeAndroid());
-        String v = Sys.prop("ro.m7s.version");
-        set(rom, v != null ? "m7s " + v : "Original", v != null ? "ROM personalizada com ajustes de memória, bateria e CPU." : "Propriedade ro.m7s.version não encontrada.",
-                v != null ? new Data.Grade(Ui.OK, "ROM otimizada para este tablet") : new Data.Grade(Ui.WARN, "ROM de fábrica, sem as otimizações m7s"));
+        String v = Sys.rom();
+        set(rom, v != null ? v : "Original", v != null ? "ROM autoral feita para este tablet: memória, bateria, CPU e visual próprios." : "Sistema de fábrica (sem ro.taleszin.version).",
+                v != null ? new Data.Grade(Ui.OK, "Taleszin OS rodando") : new Data.Grade(Ui.WARN, "ROM de fábrica, sem a Taleszin OS"));
     }
 
     static String[] modelInfo() {
@@ -121,8 +121,8 @@ final class SummaryPage extends Page {
         String[] m = modelInfo();
         line(sb, "Modelo", m[0] + " (" + m[1] + ")", gradeModel());
         line(sb, "Android", Build.VERSION.RELEASE + " API " + Build.VERSION.SDK_INT, gradeAndroid());
-        String v = Sys.prop("ro.m7s.version");
-        kv(sb, "ROM", v != null ? "m7s " + v : "original");
+        String v = Sys.rom();
+        kv(sb, "ROM", v != null ? v : "original");
         line(sb, "CPU", cpuLine(), Data.gradeCpu(Sys.LOAD.last[0]));
         Data.Mem mm = Data.Mem.read();
         line(sb, "RAM", Ui.kb(mm.used()) + " usados de " + Ui.kb(mm.total), Data.gradeMem(mm));

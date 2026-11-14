@@ -31,9 +31,9 @@ final class SystemPage extends Page {
         }
         Ui.note(b, "O fingerprint é a “impressão digital” do sistema: identifica exatamente qual build está instalado. O kernel é o núcleo Linux que conversa com o hardware.");
 
-        LinearLayout r = Ui.card(body, "ROM m7s e Xposed");
+        LinearLayout r = Ui.card(body, "Taleszin OS e Xposed");
         for (String[] x : romRows(a)) Ui.kv(r, x[0], x[1]);
-        Ui.note(r, "A ROM m7s é a versão modificada do sistema para este tablet. O Xposed é uma ferramenta que permite módulos mudarem o comportamento do Android sem trocar a ROM; este app só verifica se ele está instalado.");
+        Ui.note(r, "A Taleszin OS é a ROM autoral deste tablet: memória e CPU afinados, vigia de bateria, telemetria, tema e apps próprios. O Xposed é uma ferramenta que permite módulos mudarem o comportamento do Android sem trocar a ROM; este app só verifica se ele está instalado.");
 
         LinearLayout t = Ui.card(body, "Tempo ligado e sono profundo (ao vivo)");
         upTv = Ui.kv(t, "Ligado há", "…");
@@ -86,8 +86,9 @@ final class SystemPage extends Page {
 
     static List<String[]> romRows(Context c) {
         List<String[]> o = new ArrayList<String[]>();
-        String v = Sys.prop("ro.m7s.version");
-        o.add(new String[]{"Versão da ROM m7s", v == null ? "não é a ROM m7s" : v});
+        String v = Sys.rom();
+        o.add(new String[]{"Sistema", v == null ? "ROM de fábrica" : v});
+        if (v != null) o.add(new String[]{"Base de hardware", Sys.or(Sys.prop("ro.taleszin.base"))});
         o.add(new String[]{"low_ram", Sys.or(Sys.prop("ro.config.low_ram"))});
         o.add(new String[]{"Heap máximo (largeHeap)", Sys.or(Sys.prop("dalvik.vm.heapsize"))});
         o.add(new String[]{"Heap padrão por app", Sys.or(Sys.prop("dalvik.vm.heapgrowthlimit"))});

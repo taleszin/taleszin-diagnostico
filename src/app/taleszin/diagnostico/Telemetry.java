@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Lê a telemetria da ROM m7s (/data/m7s-telemetry/AAAA-MM-DD.csv) em fluxo: só o arquivo de hoje e o
+ * Lê a telemetria da Taleszin OS (/data/m7s-telemetry/AAAA-MM-DD.csv) em fluxo: só o arquivo de hoje e o
  * de ontem, guardando apenas as colunas usadas em vetores de int. Java puro (testável fora do Android).
  */
 final class Telemetry {
@@ -48,7 +48,7 @@ final class Telemetry {
         File d = new File(dir);
         try {
             if (!d.exists()) {
-                t.error = "A telemetria da ROM não foi encontrada (" + dir + "). Ela só existe na ROM m7s: "
+                t.error = "A telemetria da ROM não foi encontrada (" + dir + "). Ela só existe na Taleszin OS: "
                         + "em outra ROM, ou se o registrador estiver desligado, esta parte fica vazia.";
                 return t;
             }
@@ -78,7 +78,7 @@ final class Telemetry {
             t.error = d.canRead()
                     ? "A pasta da telemetria existe, mas não há arquivos de hoje nem de ontem. O registrador está rodando?"
                     : "A pasta da telemetria existe, mas o Android não deixou o app ler (" + dir
-                      + "). Na ROM m7s ela deve ficar legível por todos (755/644).";
+                      + "). Na Taleszin OS ela deve ficar legível por todos (755/644).";
             return t;
         }
         boolean denied = false;

@@ -56,7 +56,7 @@ final class BatteryPage extends Page {
                 + "em repouso a tensão sobe de novo e a % “volta”. Por isso a % pode pular de 60 para 30 e depois para 45. Confie mais na tensão e no gráfico.");
 
         LinearLayout p = Ui.card(body, "Powerguard (guarda da bateria)");
-        Ui.note(p, "O powerguard é um vigia da ROM m7s: na bateria ele limita o CPU a 816 MHz e, se a tensão ficar abaixo de 3,48 V em 2 leituras seguidas, "
+        Ui.note(p, "O powerguard é um vigia da Taleszin OS: na bateria ele limita o CPU a 816 MHz e, se a tensão ficar abaixo de 3,48 V em 2 leituras seguidas, "
                 + "desliga o tablet do jeito certo (fechando os apps e salvando os dados) antes que a bateria apague sozinha e corrompa algo.");
         pgState = Ui.kv(p, "Estado atual", "…");
         Ui.note(p, "Últimas linhas do registro:");
@@ -79,7 +79,7 @@ final class BatteryPage extends Page {
         status.setText(b.statusPt());
         src.setText(b.source());
         health.setText(b.healthPt());
-        temp.setText(Float.isNaN(b.tempC) ? "sem sensor" : Ui.f1(b.tempC) + " °C");
+        temp.setText(Float.isNaN(b.tempC) ? "não medida (sem sensor; estimativa na aba CPU)" : Ui.f1(b.tempC) + " °C");
         tech.setText(Sys.or(b.tech));
         Data.Grade g = Data.gradeBatt(b);
         Ui.setGrade(grade, g.g, g.why);
@@ -143,7 +143,7 @@ final class BatteryPage extends Page {
                     + "Trechos sem linha = tablet desligado ou em sono profundo.");
         }
         pgState.setText(stateText(st));
-        if (log == null) pgLog.setText("powerguard.log indisponível (só existe na ROM m7s, ou sem permissão de leitura).");
+        if (log == null) pgLog.setText("powerguard.log indisponível (só existe na Taleszin OS, ou sem permissão de leitura).");
         else if (log.isEmpty()) pgLog.setText("(registro vazio)");
         else {
             StringBuilder sb = new StringBuilder();
@@ -175,7 +175,7 @@ final class BatteryPage extends Page {
         kv(sb, "Estado", b.statusPt());
         kv(sb, "Fonte", b.source());
         kv(sb, "Saúde", b.healthPt());
-        kv(sb, "Temperatura", Float.isNaN(b.tempC) ? "sem sensor" : Ui.f1(b.tempC) + " °C");
+        kv(sb, "Temperatura", Float.isNaN(b.tempC) ? "não medida (sem sensor)" : Ui.f1(b.tempC) + " °C");
         Data.Grade g = Data.gradeBatt(b);
         kv(sb, "Nota", Ui.gradeWord(g.g) + ": " + g.why);
         Telemetry t = Telemetry.get();
